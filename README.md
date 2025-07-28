@@ -59,6 +59,43 @@ Given the dependent relationship where an account needs a user and a transaction
 ### Code structure
 
 The code in this repo is arranged by feature (e.g. authentication) rather than layer (e.g. controller).
+```
+src/
+├── main/
+│   ├── java/
+│   │   └── com/eaglebank/
+│   │       ├── auth/
+│   │       │   ├── dto/                             # Request/response DTOs for authentication
+│   │       │   ├── AuthController.java              # REST controller for authentication endpoints
+│   │       │   ├── AuthService.java                 # Business logic for authentication and JWT handling
+│   │       │   ├── JwtAuthEntryPoint.java           # Entry point for JWT authentication failures
+│   │       │   └── JwtService.java                  # Service for JWT token generation and validation
+│   │       ├── common/
+│   │       │   └── exception/
+│   │       │       ├── handler/
+│   │       │       │   └── GlobalExceptionHandler.java   # Centralized exception handling for REST API
+│   │       │       └── <custom exceptions>               # Custom exceptions used across the app
+│   │       ├── config/
+│   │       │   ├── JwtAuthFilter.java               # Spring Security filter for JWT token validation
+│   │       │   ├── PasswordEncoderConfig.java       # Password encoding configuration (using BCrypt)
+│   │       │   └── SecurityConfig.java              # Security configuration including authentication rules
+│   │       ├── security/
+│   │       │   └── SecurityUtils.java               # Utility class for security-related helper methods
+│   │       ├── user/
+│   │       │   ├── dto/                             # Request/response DTOs for user endpoints
+│   │       │   ├── User.java                        # User entity mapping database table
+│   │       │   ├── UserController.java              # REST controller for user-related endpoints
+│   │       │   ├── UserRepository.java              # Spring Data JPA repository for User entity
+│   │       │   └── UserService.java                 # Business logic for user management
+│   │       └── EaglebankApiApplication.java         # Main Spring Boot application class
+│   └── resources/
+│       ├── db/
+│       │   └── migration/                           # Database migration scripts (Flyway)
+│       └── application.properties                   # Application configuration properties (currently set up for local)
+└── test/
+    └── java/
+        └── com/eaglebank/                           # Tests mirroring the structure of code under test in main
+````
 
 ## How to run the project
 
