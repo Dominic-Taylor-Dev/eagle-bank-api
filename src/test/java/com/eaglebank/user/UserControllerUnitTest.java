@@ -1,6 +1,9 @@
 package com.eaglebank.user;
 
+import com.eaglebank.auth.JwtService;
 import com.eaglebank.common.exception.EmailAlreadyInUseException;
+import com.eaglebank.common.exception.InvalidUserIdException;
+import com.eaglebank.security.SecurityUtils;
 import com.eaglebank.user.dto.CreateUserRequest;
 import com.eaglebank.user.dto.UserResponse;
 import com.eaglebank.user.dto.AddressDto;
@@ -8,6 +11,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -20,6 +25,7 @@ import java.time.Instant;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -39,6 +45,9 @@ class UserControllerUnitTest {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private JwtService jwtService;
 
     @Nested
     @DisplayName("Create User")
@@ -184,6 +193,67 @@ class UserControllerUnitTest {
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
                     .andExpect(jsonPath("$.type").value("https://api.eaglebank.com/problems/email-already-in-use"))
                     .andExpect(jsonPath("$.title").value("Email Already In Use"));
+        }
+    }
+
+    @Nested
+    @DisplayName("Get User")
+    class GetUserTests {
+
+        private final String userId = "user-123";
+
+        private UserResponse sampleUserResponse() {
+            return new UserResponse(
+                    userId,
+                    "Jane Doe",
+                    new AddressDto("123 Main St", "Apt 4B", "Building 5", "Springfield", "SomeCounty", "SP1 2AB"),
+                    "+12345678901",
+                    "jane@example.com",
+                    Instant.now(),
+                    Instant.now()
+            );
+        }
+
+        @Test
+        @DisplayName("Should return user if authenticated user matches path userId")
+        void shouldReturnUserIfAuthenticated() throws Exception {
+            // Simulate correct user authenticated
+            try (MockedStatic<SecurityUtils> mockedSecurityUtils = Mockito.mockStatic(SecurityUtils.class)) {
+                mockedSecurityUtils.when(SecurityUtils::getAuthenticatedUserId).thenReturn(userId);
+                when(userService.getUserById(userId)).thenReturn(sampleUserResponse());
+
+                mockMvc.perform(get(BASE_URL + "/" + userId))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.id").value(userId))
+                        .andExpect(jsonPath("$.name").value("Jane Doe"))
+                        .andExpect(jsonPath("$.email").value("jane@example.com"));
+            }
+        }
+
+        @Test
+        @DisplayName("Should return 403 if authenticated user does not match path userId")
+        void shouldReturnForbiddenForMismatchedUserId() throws Exception {
+            try (MockedStatic<SecurityUtils> mockedSecurityUtils = Mockito.mockStatic(SecurityUtils.class)) {
+                mockedSecurityUtils.when(SecurityUtils::getAuthenticatedUserId).thenReturn("another-user");
+
+                mockMvc.perform(get(BASE_URL + "/" + userId))
+                        .andExpect(status().isForbidden());
+            }
+        }
+
+        @Test
+        @DisplayName("Should return 404 if user not found")
+        void shouldReturnNotFoundWhenUserNotFound() throws Exception {
+            try (MockedStatic<SecurityUtils> mockedSecurityUtils = Mockito.mockStatic(SecurityUtils.class)) {
+                mockedSecurityUtils.when(SecurityUtils::getAuthenticatedUserId).thenReturn(userId);
+
+                when(userService.getUserById(userId)).thenThrow(new InvalidUserIdException());
+
+                mockMvc.perform(get(BASE_URL + "/" + userId))
+                        .andExpect(status().isNotFound())
+                        .andExpect(jsonPath("$.type").value("https://api.eaglebank.com/problems/user-not-found"))
+                        .andExpect(jsonPath("$.title").value("User Not Found"));
+            }
         }
     }
 }

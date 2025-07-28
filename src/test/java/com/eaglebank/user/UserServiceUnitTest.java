@@ -1,6 +1,7 @@
 package com.eaglebank.user;
 
 import com.eaglebank.common.exception.EmailAlreadyInUseException;
+import com.eaglebank.common.exception.InvalidUserIdException;
 import com.eaglebank.user.dto.AddressDto;
 import com.eaglebank.user.dto.CreateUserRequest;
 import com.eaglebank.user.dto.UserResponse;
@@ -12,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,6 +35,8 @@ class UserServiceUnitTest {
     private CreateUserRequest request;
 
     private AutoCloseable mocks;
+
+    private final String userId = "user-123";
 
     @BeforeEach
     void setUp() {
@@ -63,14 +68,13 @@ class UserServiceUnitTest {
     @Test
     @DisplayName("When given valid input, successfully creates a new user")
     void createUserSuccess() {
-        String mockUserId = "user-123";
         String mockHashedPassword = "hashedPassword";
 
         when(userRepository.existsByEmail(request.email())).thenReturn(false);
         when(passwordEncoder.encode(request.password())).thenReturn(mockHashedPassword);
 
         User savedUser = User.builder()
-                .id(mockUserId)
+                .id(userId)
                 .name(request.name())
                 .email(request.email())
                 .passwordHash(mockHashedPassword)
@@ -88,7 +92,7 @@ class UserServiceUnitTest {
         UserResponse response = userService.createUser(request);
 
         assertThat(response).isNotNull();
-        assertThat(response.id()).isEqualTo(mockUserId);
+        assertThat(response.id()).isEqualTo(userId);
         assertThat(response.name()).isEqualTo(request.name());
         assertThat(response.email()).isEqualTo(request.email());
 
@@ -109,5 +113,32 @@ class UserServiceUnitTest {
         verify(userRepository).existsByEmail(request.email());
         verify(passwordEncoder, never()).encode(any());
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Returns user when ID exists")
+    void getUserByIdSuccess() {
+        User user = User.builder()
+                .id(userId)
+                .name("Test User")
+                .email("test@example.com")
+                .passwordHash("secret")
+                .build();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        UserResponse response = userService.getUserById(userId);
+
+        assertThat(response.id()).isEqualTo(userId);
+        assertThat(response.name()).isEqualTo("Test User");
+    }
+
+    @Test
+    @DisplayName("Throws UserNotFoundException when user not found")
+    void getUserByIdNotFound() {
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.getUserById(userId))
+                .isInstanceOf(InvalidUserIdException.class);
     }
 }

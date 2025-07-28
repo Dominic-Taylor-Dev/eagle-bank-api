@@ -9,15 +9,15 @@ accounts and deposit or withdraw money from the account.
 ### The development process
 I started off by reviewing the requirements and making some initial design decisions. These can be found in `docs/DESIGN-DECISIONS.md`.
 
-Given the dependent relationship where an account needs a user and a transaction needs an account, I decided to handle endpoint implementation in the order of the rubric:
+Given the dependent relationship where an account needs a user and a transaction needs an account, I decided to handle endpoint implementation in the order of the rubric. I implemented a couple of example endpoints which include demonstrating my JWT auth setup. Although this is only a fraction of all of the endpoints, I would have followed similar patterns for the remainder. The points of interest, such as the need for transactions when it comes to some of the financial operations are discussed at a high level in the design decisions document.
 
 ## User Management
 - [x] Create a user
 - [x] Create a new user without supplying all required data
-- [ ] Authenticate a user
-- [ ] Fetch a user
-- [ ] Fetch another user's details (should be forbidden)
-- [ ] Fetch a non-existent user
+- [x] Authenticate a user
+- [x] Fetch a user
+- [x] Fetch another user's details (should be forbidden)
+- [x] Fetch a non-existent user
 - [ ] Update a user
 - [ ] Update another user's details (should be forbidden)
 - [ ] Update a non-existent user
@@ -79,3 +79,5 @@ There are multiple ways to run the tests:
 - Once the database is up and running you can start the main Spring application either:
   - If using IntelliJ: with the 'play' button on `src/main/java/com/eaglebank/EaglebankApiApplication.java`
   - Via command line: Use the appropriate Maven wrapper for your OS. `./mvnw spring-boot:run` for Linux/macOS or `.\mvnw spring-boot:run` on Windows (JAVA_HOME variable needs to be set and should point at a Java 21 distribution)
+- From here you can perform manual testing with any client.
+- To facilitate this, there are example requests in `docs/manual-testing.http` which can be used with the IntelliJ or VS Code integrated REST clients.

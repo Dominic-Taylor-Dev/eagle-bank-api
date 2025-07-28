@@ -1,6 +1,8 @@
 package com.eaglebank.common.exception.handler;
 
 import com.eaglebank.common.exception.EmailAlreadyInUseException;
+import com.eaglebank.common.exception.InvalidCredentialsException;
+import com.eaglebank.common.exception.InvalidUserIdException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -9,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,6 +41,54 @@ public class GlobalExceptionHandler {
         problemDetail.setProperty("timestamp", LocalDateTime.now());
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(problemDetail);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ProblemDetail> handleAccessDeniedException(
+            AccessDeniedException ex, HttpServletRequest request) {
+
+        log.warn("Access denied: {}", ex.getMessage());
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.FORBIDDEN, ex.getMessage());
+        problemDetail.setType(URI.create(BASE_PROBLEM_URL + "access-denied"));
+        problemDetail.setTitle("Access Denied");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("timestamp", LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(problemDetail);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidCredentialsException(
+            InvalidCredentialsException ex, HttpServletRequest request) {
+
+        log.warn("Invalid credentials: {}", ex.getMessage());
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED, ex.getMessage());
+        problemDetail.setType(URI.create(BASE_PROBLEM_URL + "invalid-credentials"));
+        problemDetail.setTitle("Invalid Credentials");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("timestamp", LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problemDetail);
+    }
+
+    @ExceptionHandler(InvalidUserIdException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidUserIdException(
+            InvalidUserIdException ex, HttpServletRequest request) {
+
+        log.warn("Invalid user ID: {}", ex.getMessage());
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND, ex.getMessage());
+        problemDetail.setType(URI.create(BASE_PROBLEM_URL + "user-not-found"));
+        problemDetail.setTitle("User Not Found");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("timestamp", LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

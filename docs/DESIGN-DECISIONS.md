@@ -3,10 +3,9 @@
 Whilst instructions and an OpenAPI spec have been provided, I have made some design decisions which I have recorded below. These are intended to reflect a balance between pragmatism and realism, given the scope of a take-home task, while being sensitive to patterns that would matter in a production-grade system.
 
 The reasons are in some cases explained more below, but I have deviated from the spec deliberately on a couple of matters that I will mention up front:
-- Where a user is making an authenticated request, we do not require an explicit path variable for user ID, since the ID will be encoded in the JWT
 - I will be storing hashed passwords to support the auth feature, so password will become a required field on user creation
 - The story for creating a user without required data says "Given a user has successfully authenticated". However, I think that this endpoint should return 400 status regardless of authentication
-
+- I have implemented somewhat more verbose error response bodies than are indicated in the OpenAPI spec
 ---
 
 ## Requirements Analysis
@@ -55,6 +54,7 @@ The PDF scenario requires an endpoint that issues JWT tokens upon successful aut
   - `sub` (subject): the user's userId
   - `exp`: expiration
   - Optional: email, scope, or role if expanded later
+- Failed auth is handled via an AuthenticationEntryPoint which sets the response status to 401 and provides an error message to the user
 
 **Alternatives considered:**
 

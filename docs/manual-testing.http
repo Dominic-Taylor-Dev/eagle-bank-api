@@ -1,0 +1,29 @@
+POST http://localhost:8080/v1/users
+Content-Type: application/json
+
+{
+  "name": "Bilbo Baggins",
+  "address": {
+    "line1": "Casa Bilbo",
+    "town": "Hobbiton",
+    "county": "The Shire",
+    "postcode": "SH1 BLB"
+  },
+  "phoneNumber": "+447651234567",
+  "email": "bilbo.baggins@shire.com",
+  "password": "greatPassword123"
+}
+
+###
+POST http://localhost:8080/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "bilbo.baggins@shire.com",
+  "password": "greatPassword123"
+}
+
+###
+# Use id from first query as user ID parameter, and bearer token from second query as JWT value
+GET http://localhost:8080/v1/users/<replace with user ID>
+Authorization: Bearer <replace with token>

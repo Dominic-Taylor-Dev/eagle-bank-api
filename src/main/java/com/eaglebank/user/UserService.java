@@ -1,6 +1,7 @@
 package com.eaglebank.user;
 
 import com.eaglebank.common.exception.EmailAlreadyInUseException;
+import com.eaglebank.common.exception.InvalidUserIdException;
 import com.eaglebank.user.dto.CreateUserRequest;
 import com.eaglebank.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
@@ -47,4 +48,9 @@ public class UserService {
         return UserResponse.from(saved);
     }
 
+    public UserResponse getUserById(String userId) {
+        var user = userRepository.findById(userId).orElseThrow(InvalidUserIdException::new);
+
+        return UserResponse.from(user);
+    }
 }
