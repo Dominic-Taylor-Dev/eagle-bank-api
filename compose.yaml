@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: eaglebank-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: eaglebank
+      POSTGRES_PASSWORD: eaglebankpass
+    ports:
+      - "9090:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

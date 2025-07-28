@@ -12,8 +12,8 @@ I started off by reviewing the requirements and making some initial design decis
 Given the dependent relationship where an account needs a user and a transaction needs an account, I decided to handle endpoint implementation in the order of the rubric:
 
 ## User Management
-- [ ] Create a user
-- [ ] Create a new user without supplying all required data
+- [x] Create a user
+- [x] Create a new user without supplying all required data
 - [ ] Authenticate a user
 - [ ] Fetch a user
 - [ ] Fetch another user's details (should be forbidden)
@@ -61,3 +61,21 @@ Given the dependent relationship where an account needs a user and a transaction
 The code in this repo is arranged by feature (e.g. authentication) rather than layer (e.g. controller).
 
 ## How to run the project
+
+### Pre-requisites
+- Java JDK 21
+- Docker (for test containers to spin up Postgres in integration tests)
+
+### Running tests
+
+There are multiple ways to run the tests:
+- If using IntelliJ: right click `src/test/java` and select "Run 'Tests in 'java'''"
+- Via command line: Use the appropriate Maven wrapper for your OS. `./mvnw test` for Linux/macOS or `.\mvnw test` on Windows (JAVA_HOME variable needs to be set and should point at a Java 21 distribution)
+
+### Non-test local running
+
+- The application is backed by Postgres. There is a Docker compose file which can set up a local database server.
+- This is started by running `docker compose up` from the repository root
+- Once the database is up and running you can start the main Spring application either:
+  - If using IntelliJ: with the 'play' button on `src/main/java/com/eaglebank/EaglebankApiApplication.java`
+  - Via command line: Use the appropriate Maven wrapper for your OS. `./mvnw spring-boot:run` for Linux/macOS or `.\mvnw spring-boot:run` on Windows (JAVA_HOME variable needs to be set and should point at a Java 21 distribution)
