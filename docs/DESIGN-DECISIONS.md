@@ -6,6 +6,7 @@ The reasons are in some cases explained more below, but I have deviated from the
 - I will be storing hashed passwords to support the auth feature, so password will become a required field on user creation
 - The story for creating a user without required data says "Given a user has successfully authenticated". However, I think that this endpoint should return 400 status regardless of authentication
 - I have implemented somewhat more verbose error response bodies than are indicated in the OpenAPI spec
+- The expected response object for a transaction includes userId but not accountId. For reasons explained below, I see the accountId as a more critical link than userId (although I would usually discuss rather than simply stray off spec as here)
 ---
 
 ## Requirements Analysis
